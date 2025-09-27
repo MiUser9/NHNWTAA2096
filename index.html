@@ -4,11 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Burmese Matrix Effect</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CVRHDWE2QL"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-CVRHDWE2QL');
+        
+        // Singapore visitors ကို special event အနေနဲ့ track လုပ်မယ်
+        function trackSingaporeVisitor() {
+            // IP-based country detection (client-side)
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    if(data.country === 'SG') {
+                        gtag('event', 'singapore_visitor', {
+                            'country': data.country,
+                            'city': data.city,
+                            'region': data.region
+                        });
+                    }
+                    
+                    // All visitors ကိုလည်း normal pageview အနေနဲ့ track လုပ်မယ်
+                    gtag('event', 'page_view', {
+                        'page_location': window.location.href,
+                        'page_title': document.title,
+                        'country': data.country
+                    });
+                })
+                .catch(error => {
+                    console.log('Geolocation failed, tracking basic pageview');
+                    gtag('event', 'page_view', {
+                        'page_location': window.location.href,
+                        'page_title': document.title
+                    });
+                });
+        }
+    </script>
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
         
         .highlight-red {
@@ -24,6 +70,7 @@
             width: 100vw;
             height: 100vh;
             touch-action: none;
+            cursor: default;
         }
         
         .container {
@@ -69,6 +116,7 @@
             flex: 1;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
         
         canvas {
@@ -123,6 +171,7 @@
             width: 200px;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
             transition: opacity 0.3s, transform 0.3s;
+            z-index: 25;
         }
         
         .controls-panel.show {
@@ -286,12 +335,10 @@
     <div class="container">
         <div class="header">
             <h1>Burmese Matrix Effect</h1>
-            
-                <div id="timeCounter" class="time-counter"></div>
-            
+            <div id="timeCounter" class="time-counter"></div>
         </div>
         
-        <div class="matrix-container">
+        <div class="matrix-container" id="matrixContainer">
             <canvas id="matrixCanvas"></canvas>
         </div>
         
@@ -299,17 +346,16 @@
             <div class="fab-btn" id="fabBtn">+</div>
             <div class="controls-panel" id="controlsPanel">
                 <div class="controls">
-                    <button class="btn" id="pauseBtn">ရပ်မည်</button>
-                    <button class="btn" id="restartBtn">ပြန်စမည်</button>
                     <button class="btn" id="colorBtn">ရောင်စုံ</button>
                     <button class="btn" id="scriptBtn">မြန်မာ</button>
+                    <button class="btn" id="restartBtn">ပြန်စမည်</button>
                 </div>
                 <div class="slider-group">
                     <div class="slider-container">
                         <span class="slider-label">အမြန်နှုန်း</span>
                         <div class="slider-controls">
                             <div class="speed-btn decrease">-</div>
-                            <span class="value-display" id="speedValue">20</span>
+                            <span class="value-display" id="speedValue">25</span>
                             <div class="speed-btn increase">+</div>
                         </div>
                     </div>
@@ -317,7 +363,7 @@
                         <span class="slider-label">အလင်း</span>
                         <div class="slider-controls">
                             <div class="brightness-btn decrease">-</div>
-                            <span class="value-display" id="brightnessValue">70</span>
+                            <span class="value-display" id="brightnessValue">100</span>
                             <div class="brightness-btn increase">+</div>
                         </div>
                     </div>
@@ -335,32 +381,31 @@
 
     <script>
         // Start date: December 31, 2016 at 7:30 AM
-        const startDate = new Date(2016, 11, 31, 7, 30, 0, 0); // Note: months are 0-indexed
+        const startDate = new Date(2016, 11, 31, 7, 30, 0, 0);
 
         function updateTimeCounter() {
             const now = new Date();
             const diffMs = now - startDate;
             
-            // Calculate days, hours, minutes, seconds
             const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
             const milliseconds = diffMs % 1000;
             
-            // Format the time string
             const timeString = `U0Y3V0L1'7761': ${days} days, ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
             
-            // Update the display
             document.getElementById('timeCounter').textContent = timeString;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Google Analytics tracking စတင်မယ်
+            trackSingaporeVisitor();
+            
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
             const fabBtn = document.getElementById('fabBtn');
             const controlsPanel = document.getElementById('controlsPanel');
-            const pauseBtn = document.getElementById('pauseBtn');
             const restartBtn = document.getElementById('restartBtn');
             const colorBtn = document.getElementById('colorBtn');
             const scriptBtn = document.getElementById('scriptBtn');
@@ -372,6 +417,7 @@
             const brightnessDecreaseBtn = document.querySelector('.brightness-btn.decrease');
             const infoBtn = document.getElementById('infoBtn');
             const infoPanel = document.getElementById('infoPanel');
+            const matrixContainer = document.getElementById('matrixContainer');
             
             // Set canvas to full window size
             canvas.width = window.innerWidth;
@@ -379,46 +425,16 @@
             
             // Character sets for different scripts
             const scripts = [
-                {
-                    name: 'မြန်မာ',
-                    chars: 'ခဂငစဇဈဉဋဌဍဎဒဓနပဖဗမရဝဠအဥဦဧဏ္ဌဏ္ဍ၏၍၌'
-                },
-                {
-                    name: 'Japanese',
-                    chars: 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
-                },
-                {
-                    name: 'Tibetan',
-                    chars: 'ཀཁགངཅཆཇཉཏཐདནཔཕབམཙཚཛཝཞཟའཡརལཤཥསཧཨ'
-                },
-                {
-                    name: 'Hindi',
-                    chars: 'अआइईउऊऋएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह'
-                },
-                {
-                    name: 'Chinese',
-                    chars: '一二三四五六七八九十百千万亿人日月火水木金土山川田海口耳目手足心'
-                },
-                {
-                    name: 'Thai',
-                    chars: 'กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอ'
-                },
-                {
-                    name: 'Lao',
-                    chars: 'ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວສຫອ'
-                },
-                {
-                    name: 'Khmer',
-                    chars: 'កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវសហឡអ'
-                },
-                {
-                    name: 'Indonesian',
-                    chars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                },
-                {
-                    name: 'English',
-                    chars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-                }
+                { name: 'မြန်မာ', chars: 'ခဂငစဇဈဉဋဌဍဎဒဓနပဖဗမရဝဠအဥဦဧဏ္ဌဏ္ဍ၏၍၌' },
+                { name: 'Japanese', chars: 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん' },
+                { name: 'Tibetan', chars: 'ཀཁགངཅཆཇཉཏཐདནཔཕབམཙཚཛཝཞཟའཡརལཤཥསཧཨ' },
+                { name: 'Hindi', chars: 'अआइईउऊऋएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह' },
+                { name: 'Chinese', chars: '一二三四五六七八九十百千万亿人日月火水木金土山川田海口耳目手足心' },
+                { name: 'Thai', chars: 'กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอ' },
+                { name: 'Lao', chars: 'ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວສຫອ' },
+                { name: 'Khmer', chars: 'កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវសហឡអ' },
+                { name: 'Indonesian', chars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' },
+                { name: 'English', chars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' }
             ];
             
             let currentScriptIndex = 0;
@@ -431,21 +447,24 @@
                 drops[i] = Math.floor(Math.random() * -canvas.height);
             }
             
-            const colors = [
-                '#FF0000', '#FF7F00', '#FFFF00', '#00FF00', 
-                '#0000FF', '#4B0082', '#9400D3', '#FF1493',
-                '#00FFFF', '#FF00FF', '#00FF7F', '#7FFF00'
-            ];
-            
-            // Default values adjusted to be slower
-            let animationSpeed = 20; // Reduced from 30 to 20
-            let brightness = 0.7;
+            // အမြန်နှုန်း 25 default ထားမယ်
+            let animationSpeed = 25;
+            let brightness = 1.0;
             let isPaused = false;
-            let colorMode = 'rainbow';
             let lastFrameTime = 0;
             let animationId;
             
-            // Update display values
+            const colorModes = [
+                { name: 'ရောင်စုံ', type: 'rainbow' },
+                { name: 'ရွှေရောင်', type: 'gold' },
+                { name: 'အဖြူရောင်', type: 'white' },
+                { name: 'အစိမ်း', type: 'green' },
+                { name: 'အနီ', type: 'red' },
+                { name: 'အပြာ', type: 'blue' }
+            ];
+            
+            let currentColorModeIndex = 0;
+            
             speedValue.textContent = animationSpeed;
             brightnessValue.textContent = Math.round(brightness * 100);
             
@@ -465,20 +484,61 @@
                         const text = chars.charAt(Math.floor(Math.random() * chars.length));
                         
                         let color;
-                        if (colorMode === 'gold') {
-                            color = `rgba(255, 215, 0, ${brightness})`;
-                        } else if (colorMode === 'rainbow') {
-                            const colorIndex = Math.floor((i % columns) / columns * colors.length);
-                            color = colors[colorIndex];
-                        } else {
-                            color = `rgba(255, 255, 255, ${brightness})`;
+                        let growEffect = false;
+                        
+                        switch (colorModes[currentColorModeIndex].type) {
+                            case 'rainbow':
+                                const hue = (i * 10 + timestamp / 50) % 360;
+                                color = `hsl(${hue}, 100%, ${50 + 30 * Math.sin(timestamp / 1000 + i * 0.1)}%)`;
+                                growEffect = true;
+                                break;
+                            case 'gold':
+                                const goldIntensity = 0.7 + 0.3 * Math.sin(timestamp / 800 + i * 0.05);
+                                color = `rgba(255, 215, 0, ${brightness * goldIntensity})`;
+                                growEffect = true;
+                                break;
+                            case 'white':
+                                const whiteIntensity = 0.6 + 0.4 * Math.sin(timestamp / 600 + i * 0.08);
+                                color = `rgba(255, 255, 255, ${brightness * whiteIntensity})`;
+                                growEffect = true;
+                                break;
+                            case 'green':
+                                const greenIntensity = 0.5 + 0.5 * Math.sin(timestamp / 700 + i * 0.07);
+                                color = `rgba(0, 255, 0, ${brightness * greenIntensity})`;
+                                growEffect = true;
+                                break;
+                            case 'red':
+                                const redIntensity = 0.5 + 0.5 * Math.sin(timestamp / 500 + i * 0.09);
+                                color = `rgba(255, 0, 0, ${brightness * redIntensity})`;
+                                growEffect = true;
+                                break;
+                            case 'blue':
+                                const blueIntensity = 0.5 + 0.5 * Math.sin(timestamp / 900 + i * 0.06);
+                                color = `rgba(0, 0, 255, ${brightness * blueIntensity})`;
+                                growEffect = true;
+                                break;
+                            default:
+                                color = `rgba(255, 255, 255, ${brightness})`;
                         }
                         
                         ctx.fillStyle = color;
-                        ctx.shadowBlur = 6 * brightness;
-                        ctx.shadowColor = color;
                         
-                        ctx.fillText(text, i * fontSize, drops[i]);
+                        if (growEffect) {
+                            ctx.shadowBlur = 10 + 5 * Math.sin(timestamp / 400 + i * 0.1);
+                            ctx.shadowColor = color;
+                        } else {
+                            ctx.shadowBlur = 6 * brightness;
+                            ctx.shadowColor = color;
+                        }
+                        
+                        if (growEffect) {
+                            const growSize = fontSize * (1 + 0.1 * Math.sin(timestamp / 300 + i * 0.05));
+                            ctx.font = `bold ${growSize}px 'Myanmar Text', 'Padauk', monospace`;
+                            ctx.fillText(text, i * fontSize, drops[i]);
+                            ctx.font = `bold ${fontSize}px 'Myanmar Text', 'Padauk', monospace`;
+                        } else {
+                            ctx.fillText(text, i * fontSize, drops[i]);
+                        }
                         
                         ctx.shadowBlur = 0;
                         
@@ -495,79 +555,138 @@
                 animationId = requestAnimationFrame(draw);
             }
             
-            // Initialize and start the time counter
-            updateTimeCounter(); // Initial call
-            setInterval(updateTimeCounter, 1); // Update every millisecond
+            // User interactions tracking for Google Analytics
+            function trackUserAction(action, label) {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', action, {
+                        'event_category': 'User Interaction',
+                        'event_label': label
+                    });
+                }
+            }
             
-            // FAB button toggle
-            fabBtn.addEventListener('click', () => {
+            updateTimeCounter();
+            setInterval(updateTimeCounter, 1);
+            
+            fabBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                trackUserAction('controls_panel_toggle', 'FAB Button');
                 const isActive = controlsPanel.classList.contains('show');
                 controlsPanel.classList.toggle('show', !isActive);
                 controlsPanel.classList.toggle('hide', isActive);
                 fabBtn.classList.toggle('active');
             });
             
-            // Control functions
-            pauseBtn.addEventListener('click', () => {
-                isPaused = !isPaused;
-                pauseBtn.textContent = isPaused ? 'ဆက်မည်' : 'ရပ်မည်';
+            document.addEventListener('click', (e) => {
+                if (!controlsPanel.contains(e.target) && !fabBtn.contains(e.target)) {
+                    controlsPanel.classList.remove('show');
+                    controlsPanel.classList.add('hide');
+                    fabBtn.classList.remove('active');
+                }
             });
             
-            restartBtn.addEventListener('click', () => {
+            controlsPanel.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            matrixContainer.addEventListener('click', (e) => {
+                e.preventDefault();
+                trackUserAction('pause_toggle', isPaused ? 'Resume' : 'Pause');
+                isPaused = !isPaused;
+            });
+            
+            matrixContainer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+            });
+            
+            matrixContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+            });
+            
+            restartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                trackUserAction('restart', 'Matrix Restart');
                 for (let i = 0; i < drops.length; i++) {
                     drops[i] = Math.floor(Math.random() * -canvas.height);
                 }
                 isPaused = false;
-                pauseBtn.textContent = 'ရပ်မည်';
             });
             
-            colorBtn.addEventListener('click', () => {
-                const modes = ['rainbow', 'gold', 'white'];
-                const currentIndex = modes.indexOf(colorMode);
-                colorMode = modes[(currentIndex + 1) % modes.length];
-                colorBtn.textContent = 
-                    colorMode === 'rainbow' ? 'ရောင်စုံ' : 
-                    colorMode === 'gold' ? 'ရွှေရောင်' : 'အဖြူရောင်';
+            colorBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentColorModeIndex = (currentColorModeIndex + 1) % colorModes.length;
+                trackUserAction('color_change', colorModes[currentColorModeIndex].name);
+                colorBtn.textContent = colorModes[currentColorModeIndex].name;
             });
             
-            scriptBtn.addEventListener('click', () => {
+            scriptBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 currentScriptIndex = (currentScriptIndex + 1) % scripts.length;
-                chars = scripts[currentScriptIndex].chars;
+                trackUserAction('script_change', scripts[currentScriptIndex].name);
                 scriptBtn.textContent = scripts[currentScriptIndex].name;
+                chars = scripts[currentScriptIndex].chars;
             });
             
-            // Speed controls
-            speedIncreaseBtn.addEventListener('click', () => {
-                if (animationSpeed < 60) {
+            speedIncreaseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                trackUserAction('speed_change', 'Increase');
+                if (animationSpeed < 5) {
+                    animationSpeed += 1;
+                } else if (animationSpeed < 60) {
                     animationSpeed += 5;
-                    speedValue.textContent = animationSpeed;
                 }
+                speedValue.textContent = animationSpeed;
             });
             
-            speedDecreaseBtn.addEventListener('click', () => {
-                if (animationSpeed > 5) {
+            speedDecreaseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                trackUserAction('speed_change', 'Decrease');
+                if (animationSpeed <= 5 && animationSpeed > 1) {
+                    animationSpeed -= 1;
+                } else if (animationSpeed > 5) {
                     animationSpeed -= 5;
-                    speedValue.textContent = animationSpeed;
                 }
+                speedValue.textContent = animationSpeed;
             });
             
-            // Brightness controls
-            brightnessIncreaseBtn.addEventListener('click', () => {
-                if (brightness < 1.0) {
+            brightnessIncreaseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                trackUserAction('brightness_change', 'Increase');
+                if (brightness * 100 < 10) {
+                    brightness = Math.min(1.0, brightness + 0.01);
+                } else if (brightness < 1.0) {
                     brightness = Math.min(1.0, brightness + 0.05);
-                    brightnessValue.textContent = Math.round(brightness * 100);
                 }
+                brightnessValue.textContent = Math.round(brightness * 100);
             });
             
-            brightnessDecreaseBtn.addEventListener('click', () => {
-                if (brightness > 0.1) {
-                    brightness = Math.max(0.1, brightness - 0.05);
-                    brightnessValue.textContent = Math.round(brightness * 100);
+            brightnessDecreaseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                trackUserAction('brightness_change', 'Decrease');
+                if (brightness * 100 <= 10 && brightness * 100 > 1) {
+                    brightness = Math.max(0.01, brightness - 0.01);
+                } else if (brightness * 100 > 10) {
+                    brightness = Math.max(0.01, brightness - 0.05);
                 }
+                brightnessValue.textContent = Math.round(brightness * 100);
             });
             
-            infoBtn.addEventListener('click', () => {
+            infoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                trackUserAction('info_panel_toggle', 'Info Button');
                 infoPanel.style.display = infoPanel.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!infoPanel.contains(e.target) && !infoBtn.contains(e.target)) {
+                    infoPanel.style.display = 'none';
+                }
+            });
+            
+            infoPanel.addEventListener('click', (e) => {
+                e.stopPropagation();
             });
             
             window.addEventListener('resize', () => {
