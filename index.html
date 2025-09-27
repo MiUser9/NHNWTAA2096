@@ -58,11 +58,11 @@
         }
         
         .time-counter {
-            color: #0f0;
+            color: #ff3366;
             font-size: 12px;
             margin-top: 5px;
             font-family: 'Courier New', monospace;
-            text-shadow: 0 0 5px #0f0;
+            text-shadow: 0 0 5px #ff3366;
         }
         
         .matrix-container {
@@ -349,7 +349,7 @@
             const milliseconds = diffMs % 1000;
             
             // Format the time string
-            const timeString = `ILOVEYOU 7761: ${days} days, ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+            const timeString = `ILOVEYOU7761: ${days} days, ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
             
             // Update the display
             document.getElementById('timeCounter').textContent = timeString;
