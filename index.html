@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
-    <!-- Disable zooming and set viewport for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burmese-Matrix</title>
+    <title>မြန်မာ Matrix Effect</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-              .highlight-red {
+        
+        .highlight-red {
             color: #ff3366;
             text-shadow: 0 0 10px #ff3366;
             font-weight: bold;
-              }
+        }
         
         body {
             background: #000;
@@ -23,7 +23,7 @@
             overflow: hidden;
             width: 100vw;
             height: 100vh;
-            touch-action: none; /* Prevent pinch-to-zoom */
+            touch-action: none;
         }
         
         .container {
@@ -45,7 +45,7 @@
         
         h1 {
             color: #fff;
-            font-size: 16px; /* Smaller for mobile */
+            font-size: 16px;
             letter-spacing: 1.5px;
             margin-bottom: 4px;
             text-shadow: 0 0 8px #fff;
@@ -53,7 +53,7 @@
         
         .subtitle {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 10px; /* Smaller for mobile */
+            font-size: 10px;
             line-height: 1.3;
         }
         
@@ -79,7 +79,7 @@
         }
         
         .fab-btn {
-            width: 45px; /* Slightly smaller for mobile */
+            width: 45px;
             height: 45px;
             background: #ff4081;
             border-radius: 50%;
@@ -112,7 +112,7 @@
             display: none;
             flex-direction: column;
             gap: 10px;
-            width: 200px; /* Adjusted for mobile */
+            width: 200px;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
             transition: opacity 0.3s, transform 0.3s;
         }
@@ -142,10 +142,10 @@
             border-radius: 18px;
             cursor: pointer;
             font-family: 'Myanmar Text', 'Padauk', sans-serif;
-            font-size: 11px; /* Smaller for mobile */
+            font-size: 11px;
             text-align: center;
             transition: all 0.3s;
-            touch-action: manipulation; /* Improve touch interaction */
+            touch-action: manipulation;
         }
         
         .btn:hover {
@@ -166,26 +166,44 @@
         
         .slider-label {
             color: #fff;
-            font-size: 10px; /* Smaller for mobile */
+            font-size: 10px;
             min-width: 60px;
         }
         
-        .slider {
-            flex: 1;
-            -webkit-appearance: none;
-            height: 3px;
-            border-radius: 1.5px;
-            background: rgba(255, 255, 255, 0.2);
-            outline: none;
+        .slider-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 10px;
-            height: 10px;
+        .speed-btn, .brightness-btn {
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
+            user-select: none;
+        }
+        
+        .speed-btn.increase, .brightness-btn.increase {
+            background-color: #0f0;
+            color: #000;
+        }
+        
+        .speed-btn.decrease, .brightness-btn.decrease {
+            background-color: #f00;
+            color: #fff;
+        }
+        
+        .value-display {
+            color: #fff;
+            font-size: 10px;
+            min-width: 30px;
+            text-align: center;
         }
         
         .info-panel {
@@ -198,7 +216,7 @@
             border-radius: 6px;
             padding: 8px;
             color: #fff;
-            font-size: 10px; /* Smaller for mobile */
+            font-size: 10px;
             line-height: 1.4;
             z-index: 20;
             display: none;
@@ -222,7 +240,6 @@
             z-index: 20;
         }
 
-        /* Ensure mobile-specific optimizations */
         @media (max-width: 768px) {
             h1 {
                 font-size: 14px;
@@ -257,7 +274,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Burmese-Matrix</h1>
+            <h1>မြန်မာ Matrix Effect</h1>
             <div class="subtitle">
                 cmatrix-inspired terminal effect with Myanmar characters<br>
                 Original concept by Chris Allegretta | Myanmar adaptation
@@ -280,11 +297,19 @@
                 <div class="slider-group">
                     <div class="slider-container">
                         <span class="slider-label">အမြန်နှုန်း</span>
-                        <input type="range" min="5" max="60" value="30" class="slider" id="speedSlider">
+                        <div class="slider-controls">
+                            <div class="speed-btn decrease">-</div>
+                            <span class="value-display" id="speedValue">20</span>
+                            <div class="speed-btn increase">+</div>
+                        </div>
                     </div>
                     <div class="slider-container">
                         <span class="slider-label">အလင်း</span>
-                        <input type="range" min="10" max="100" value="70" class="slider" id="brightnessSlider">
+                        <div class="slider-controls">
+                            <div class="brightness-btn decrease">-</div>
+                            <span class="value-display" id="brightnessValue">70</span>
+                            <div class="brightness-btn increase">+</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -308,8 +333,12 @@
             const restartBtn = document.getElementById('restartBtn');
             const colorBtn = document.getElementById('colorBtn');
             const scriptBtn = document.getElementById('scriptBtn');
-            const speedSlider = document.getElementById('speedSlider');
-            const brightnessSlider = document.getElementById('brightnessSlider');
+            const speedValue = document.getElementById('speedValue');
+            const brightnessValue = document.getElementById('brightnessValue');
+            const speedIncreaseBtn = document.querySelector('.speed-btn.increase');
+            const speedDecreaseBtn = document.querySelector('.speed-btn.decrease');
+            const brightnessIncreaseBtn = document.querySelector('.brightness-btn.increase');
+            const brightnessDecreaseBtn = document.querySelector('.brightness-btn.decrease');
             const infoBtn = document.getElementById('infoBtn');
             const infoPanel = document.getElementById('infoPanel');
             
@@ -363,7 +392,7 @@
             
             let currentScriptIndex = 0;
             let chars = scripts[currentScriptIndex].chars;
-            const fontSize = 11; /* Smaller font size for mobile */
+            const fontSize = 11;
             const columns = Math.floor(canvas.width / fontSize);
             
             const drops = [];
@@ -377,12 +406,17 @@
                 '#00FFFF', '#FF00FF', '#00FF7F', '#7FFF00'
             ];
             
-            let animationSpeed = 30;
+            // Default values adjusted to be slower
+            let animationSpeed = 20; // Reduced from 30 to 20
             let brightness = 0.7;
             let isPaused = false;
             let colorMode = 'rainbow';
             let lastFrameTime = 0;
             let animationId;
+            
+            // Update display values
+            speedValue.textContent = animationSpeed;
+            brightnessValue.textContent = Math.round(brightness * 100);
             
             function draw(timestamp) {
                 if (!lastFrameTime) lastFrameTime = timestamp;
@@ -410,7 +444,7 @@
                         }
                         
                         ctx.fillStyle = color;
-                        ctx.shadowBlur = 6 * brightness; /* Adjusted for mobile */
+                        ctx.shadowBlur = 6 * brightness;
                         ctx.shadowColor = color;
                         
                         ctx.fillText(text, i * fontSize, drops[i]);
@@ -467,12 +501,34 @@
                 scriptBtn.textContent = scripts[currentScriptIndex].name;
             });
             
-            speedSlider.addEventListener('input', () => {
-                animationSpeed = speedSlider.value;
+            // Speed controls
+            speedIncreaseBtn.addEventListener('click', () => {
+                if (animationSpeed < 60) {
+                    animationSpeed += 5;
+                    speedValue.textContent = animationSpeed;
+                }
             });
             
-            brightnessSlider.addEventListener('input', () => {
-                brightness = brightnessSlider.value / 100;
+            speedDecreaseBtn.addEventListener('click', () => {
+                if (animationSpeed > 5) {
+                    animationSpeed -= 5;
+                    speedValue.textContent = animationSpeed;
+                }
+            });
+            
+            // Brightness controls
+            brightnessIncreaseBtn.addEventListener('click', () => {
+                if (brightness < 1.0) {
+                    brightness = Math.min(1.0, brightness + 0.05);
+                    brightnessValue.textContent = Math.round(brightness * 100);
+                }
+            });
+            
+            brightnessDecreaseBtn.addEventListener('click', () => {
+                if (brightness > 0.1) {
+                    brightness = Math.max(0.1, brightness - 0.05);
+                    brightnessValue.textContent = Math.round(brightness * 100);
+                }
             });
             
             infoBtn.addEventListener('click', () => {
