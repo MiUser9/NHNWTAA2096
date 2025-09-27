@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>မြန်မာ Matrix Effect</title>
+    <title>Burmese Matrix Effect</title>
     <style>
         * {
             margin: 0;
@@ -45,7 +45,7 @@
         
         h1 {
             color: #fff;
-            font-size: 16px;
+            font-size: 18px;
             letter-spacing: 1.5px;
             margin-bottom: 4px;
             text-shadow: 0 0 8px #fff;
@@ -55,6 +55,14 @@
             color: rgba(255, 255, 255, 0.7);
             font-size: 10px;
             line-height: 1.3;
+        }
+        
+        .time-counter {
+            color: #0f0;
+            font-size: 12px;
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #0f0;
         }
         
         .matrix-container {
@@ -247,6 +255,9 @@
             .subtitle {
                 font-size: 9px;
             }
+            .time-counter {
+                font-size: 18px;
+            }
             .controls-panel {
                 width: 180px;
             }
@@ -274,11 +285,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>မြန်မာ Matrix Effect</h1>
-            <div class="subtitle">
-                cmatrix-inspired terminal effect with Myanmar characters<br>
-                Original concept by Chris Allegretta | Myanmar adaptation
-            </div>
+            <h1>Burmese Matrix Effect</h1>
+            
+                <div id="timeCounter" class="time-counter"></div>
+            
         </div>
         
         <div class="matrix-container">
@@ -324,6 +334,27 @@
     </div>
 
     <script>
+        // Start date: December 31, 2016 at 7:30 AM
+        const startDate = new Date(2016, 11, 31, 7, 30, 0, 0); // Note: months are 0-indexed
+
+        function updateTimeCounter() {
+            const now = new Date();
+            const diffMs = now - startDate;
+            
+            // Calculate days, hours, minutes, seconds
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+            const milliseconds = diffMs % 1000;
+            
+            // Format the time string
+            const timeString = `ILOVEYOU 7761: ${days} days, ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+            
+            // Update the display
+            document.getElementById('timeCounter').textContent = timeString;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
@@ -463,6 +494,10 @@
                 
                 animationId = requestAnimationFrame(draw);
             }
+            
+            // Initialize and start the time counter
+            updateTimeCounter(); // Initial call
+            setInterval(updateTimeCounter, 1); // Update every millisecond
             
             // FAB button toggle
             fabBtn.addEventListener('click', () => {
