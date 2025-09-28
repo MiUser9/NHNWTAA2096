@@ -5,45 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Burmese Matrix Effect</title>
     
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CVRHDWE2QL"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-CVRHDWE2QL');
-        
-        // Singapore visitors ကို special event အနေနဲ့ track လုပ်မယ်
-        function trackSingaporeVisitor() {
-            // IP-based country detection (client-side)
-            fetch('https://ipapi.co/json/')
-                .then(response => response.json())
-                .then(data => {
-                    if(data.country === 'SG') {
-                        gtag('event', 'singapore_visitor', {
-                            'country': data.country,
-                            'city': data.city,
-                            'region': data.region
-                        });
-                    }
-                    
-                    // All visitors ကိုလည်း normal pageview အနေနဲ့ track လုပ်မယ်
-                    gtag('event', 'page_view', {
-                        'page_location': window.location.href,
-                        'page_title': document.title,
-                        'country': data.country
-                    });
-                })
-                .catch(error => {
-                    console.log('Geolocation failed, tracking basic pageview');
-                    gtag('event', 'page_view', {
-                        'page_location': window.location.href,
-                        'page_title': document.title
-                    });
-                });
-        }
-    </script>
-    
     <style>
         * {
             margin: 0;
@@ -399,9 +360,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Google Analytics tracking စတင်မယ်
-            trackSingaporeVisitor();
-            
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
             const fabBtn = document.getElementById('fabBtn');
@@ -555,23 +513,12 @@
                 animationId = requestAnimationFrame(draw);
             }
             
-            // User interactions tracking for Google Analytics
-            function trackUserAction(action, label) {
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', action, {
-                        'event_category': 'User Interaction',
-                        'event_label': label
-                    });
-                }
-            }
-            
             updateTimeCounter();
             setInterval(updateTimeCounter, 1);
             
             fabBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                trackUserAction('controls_panel_toggle', 'FAB Button');
                 const isActive = controlsPanel.classList.contains('show');
                 controlsPanel.classList.toggle('show', !isActive);
                 controlsPanel.classList.toggle('hide', isActive);
@@ -592,7 +539,6 @@
             
             matrixContainer.addEventListener('click', (e) => {
                 e.preventDefault();
-                trackUserAction('pause_toggle', isPaused ? 'Resume' : 'Pause');
                 isPaused = !isPaused;
             });
             
@@ -606,7 +552,6 @@
             
             restartBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                trackUserAction('restart', 'Matrix Restart');
                 for (let i = 0; i < drops.length; i++) {
                     drops[i] = Math.floor(Math.random() * -canvas.height);
                 }
@@ -616,21 +561,18 @@
             colorBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 currentColorModeIndex = (currentColorModeIndex + 1) % colorModes.length;
-                trackUserAction('color_change', colorModes[currentColorModeIndex].name);
                 colorBtn.textContent = colorModes[currentColorModeIndex].name;
             });
             
             scriptBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 currentScriptIndex = (currentScriptIndex + 1) % scripts.length;
-                trackUserAction('script_change', scripts[currentScriptIndex].name);
                 scriptBtn.textContent = scripts[currentScriptIndex].name;
                 chars = scripts[currentScriptIndex].chars;
             });
             
             speedIncreaseBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                trackUserAction('speed_change', 'Increase');
                 if (animationSpeed < 5) {
                     animationSpeed += 1;
                 } else if (animationSpeed < 60) {
@@ -641,7 +583,6 @@
             
             speedDecreaseBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                trackUserAction('speed_change', 'Decrease');
                 if (animationSpeed <= 5 && animationSpeed > 1) {
                     animationSpeed -= 1;
                 } else if (animationSpeed > 5) {
@@ -652,7 +593,6 @@
             
             brightnessIncreaseBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                trackUserAction('brightness_change', 'Increase');
                 if (brightness * 100 < 10) {
                     brightness = Math.min(1.0, brightness + 0.01);
                 } else if (brightness < 1.0) {
@@ -663,7 +603,6 @@
             
             brightnessDecreaseBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                trackUserAction('brightness_change', 'Decrease');
                 if (brightness * 100 <= 10 && brightness * 100 > 1) {
                     brightness = Math.max(0.01, brightness - 0.01);
                 } else if (brightness * 100 > 10) {
@@ -675,7 +614,6 @@
             infoBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                trackUserAction('info_panel_toggle', 'Info Button');
                 infoPanel.style.display = infoPanel.style.display === 'block' ? 'none' : 'block';
             });
             
