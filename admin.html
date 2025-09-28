@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            font-family: 'Myanmar Text', 'Padauk', monospace;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ff4081;
+        }
+        
+        .header h1 {
+            color: #ff4081;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            background: #ff4081;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .login-form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 50px auto;
+            border: 1px solid #ff4081;
+        }
+        
+        .login-form h2 {
+            color: #ff4081;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff4081;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .admin-panel {
+            display: none;
+        }
+        
+        .admin-panel.show {
+            display: block;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff4081;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: rgba(255, 64, 129, 0.3);
+            border: 1px solid #ff4081;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .visitors-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .visitors-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+            font-size: 14px;
+        }
+        
+        .visitors-table th {
+            background: rgba(255, 64, 129, 0.3);
+            color: #ff4081;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #ff4081;
+        }
+        
+        .visitors-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .visitors-table tr:hover {
+            background: rgba(255, 64, 129, 0.1);
+        }
+        
+        .coord-cell {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #0f0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #ff4081;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ff3333;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        .connection-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .status-connecting {
+            background-color: #ff9800;
+            color: black;
+        }
+        
+        .status-success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .status-error {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .control-btn {
+                text-align: center;
+            }
+            
+            .visitors-table {
+                font-size: 12px;
+                min-width: 900px;
+            }
+            
+            .visitors-table th,
+            .visitors-table td {
+                padding: 8px 10px;
+            }
+            
+            .coord-cell {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Admin Panel</h1>
+            <a href="index.html" class="back-btn">Back to Matrix</a>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-form" id="loginForm">
+            <h2>Login</h2>
+            <input type="password" class="login-input" id="adminPassword" placeholder="Enter password" />
+            <button class="login-btn" id="loginBtn">Login</button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel" id="adminPanel">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalVisitors">0</div>
+                    <div class="stat-label">Total Visitors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="singaporeVisitors">0</div>
+                    <div class="stat-label">Singapore</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uniqueCountries">0</div>
+                    <div class="stat-label">Countries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="todayVisitors">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" onclick="loadVisitorData()">Refresh</button>
+                <button class="control-btn" onclick="exportToCSV()">Export CSV</button>
+                <button class="control-btn" onclick="clearAllData()">Clear Data</button>
+                <button class="control-btn" onclick="testConnection()">Test Connection</button>
+            </div>
+
+            <div class="visitors-table-container">
+                <div id="loadingMessage" class="loading">Loading data...</div>
+                <div id="errorMessage" class="error" style="display: none;"></div>
+                <div id="emptyMessage" class="empty-state" style="display: none;">No visitor data found</div>
+                
+                <table class="visitors-table" id="visitorsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Country</th>
+                            <th>City</th>
+                            <th>Region</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>IP Address</th>
+                            <th>User Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visitorsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "matrix2024";
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-ieu5xgUR9GWVLPyf-il8YuRfR2U4Uic1rtgHklPy2mc931JZEsV6JZEm5b4CxFzc/exec';
+        
+        let visitorData = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const adminPanel = document.getElementById('adminPanel');
+            const adminPassword = document.getElementById('adminPassword');
+            const loginBtn = document.getElementById('loginBtn');
+
+            loginBtn.addEventListener('click', function() {
+                if (adminPassword.value === ADMIN_PASSWORD) {
+                    loginForm.style.display = 'none';
+                    adminPanel.classList.add('show');
+                    loadVisitorData();
+                } else {
+                    alert('Incorrect password');
+                    adminPassword.value = '';
+                }
+            });
+
+            adminPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loginBtn.click();
+                }
+            });
+        });
+
+        async function loadVisitorData() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const visitorsTable = document.getElementById('visitorsTable');
+            
+            loadingMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            emptyMessage.style.display = 'none';
+            visitorsTable.style.display = 'none';
+
+            try {
+                // Try to get real data from Google Sheet
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                visitorData = Array.isArray(data) ? data : [];
+                
+                if (visitorData.length === 0) {
+                    loadingMessage.style.display = 'none';
+                    emptyMessage.style.display = 'block';
+                    return;
+                }
+                
+                updateStatistics();
+                updateVisitorsTable();
+                
+                loadingMessage.style.display = 'none';
+                visitorsTable.style.display = 'table';
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                loadingMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Error loading data from server';
+            }
+        }
+
+        function updateStatistics() {
+            const totalVisitors = visitorData.length;
+            const singaporeVisitors = visitorData.filter(v => v.countryCode === 'SG').length;
+            const uniqueCountries = new Set(visitorData.map(v => v.countryCode)).size;
+            
+            const today = new Date().toDateString();
+            const todayVisitors = visitorData.filter(v => 
+                new Date(v.timestamp).toDateString() === today
+            ).length;
+
+            document.getElementById('totalVisitors').textContent = totalVisitors;
+            document.getElementById('singaporeVisitors').textContent = singaporeVisitors;
+            document.getElementById('uniqueCountries').textContent = uniqueCountries;
+            document.getElementById('todayVisitors').textContent = todayVisitors;
+        }
+
+        function updateVisitorsTable() {
+            const tableBody = document.getElementById('visitorsTableBody');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            tableBody.innerHTML = '';
+
+            if (visitorData.length === 0) {
+                emptyMessage.style.display = 'block';
+                return;
+            }
+
+            // Show latest visitors first
+            const sortedData = [...visitorData]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            sortedData.forEach(visitor => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(visitor.timestamp)}</td>
+                    <td>${visitor.country || 'Unknown'} ${visitor.countryCode ? `(${visitor.countryCode})` : ''}</td>
+                    <td>${visitor.city || 'Unknown'}</td>
+                    <td>${visitor.region || 'Unknown'}</td>
+                    <td class="coord-cell">${formatCoordinate(visitor.latitude)}</td>
+                    <td class="coord-cell">${formatCoordinate(visitor.longitude)}</td>
+                    <td>${visitor.ip || 'Unknown'}</td>
+                    <td>${visitor.userAgent ? visitor.userAgent.substring(0, 30) + '...' : 'Unknown'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } catch {
+                return 'Invalid Date';
+            }
+        }
+
+        function formatCoordinate(coord) {
+            if (!coord || coord === 'N/A' || coord === 'Unknown') {
+                return 'N/A';
+            }
+            
+            try {
+                // Format to 6 decimal places for precision
+                const num = parseFloat(coord);
+                if (isNaN(num)) return 'N/A';
+                
+                return num.toFixed(6);
+            } catch {
+                return 'N/A';
+            }
+        }
+
+        function exportToCSV() {
+            if (visitorData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['Timestamp', 'Country', 'Country Code', 'City', 'Region', 'Latitude', 'Longitude', 'IP', 'User Agent'];
+            const csvData = visitorData.map(visitor => [
+                visitor.timestamp,
+                visitor.country,
+                visitor.countryCode,
+                visitor.city,
+                visitor.region,
+                visitor.latitude,
+                visitor.longitude,
+                visitor.ip,
+                visitor.userAgent
+            ]);
+
+            const csvContent = [headers, ...csvData]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `visitors-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        async function clearAllData() {
+            if (!confirm('Are you sure you want to clear all visitor data? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                // This would need to be implemented in your Google Apps Script
+                // For now, we'll just clear the local data
+                visitorData = [];
+                updateStatistics();
+                updateVisitorsTable();
+                
+                const emptyMessage = document.getElementById('emptyMessage');
+                const visitorsTable = document.getElementById('visitorsTable');
+                
+                visitorsTable.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                
+            } catch (error) {
+                alert('Error clearing data: ' + error.message);
+            }
+        }
+
+        async function testConnection() {
+            const testBtn = document.querySelector('.control-btn[onclick="testConnection()"]');
+            const originalText = testBtn.textContent;
+            
+            testBtn.innerHTML = 'Testing... <span class="connection-status status-connecting">Connecting</span>';
+            testBtn.disabled = true;
+            
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                testBtn.innerHTML = 'Test Connection <span class="connection-status status-success">Success</span>';
+                
+                setTimeout(() => {
+                    testBtn.innerHTML = originalText;
+                    testBtn.disabled = false;
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                testBtn.innerHTML = 'Test Connection <span class="connection-status status-error">Failed</span>';
+                
+                setTimeout(() => {
+                    testBtn.innerHTML = originalText;
+                    testBtn.disabled = false;
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
