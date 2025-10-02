@@ -17,7 +17,69 @@
             user-select: none;
             -webkit-touch-callout: none;
         }
+         
+        /* Loading Animation Styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
         
+        .loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-text {
+            color: #fff;
+            font-family: 'Myanmar Text', 'Padauk', sans-serif;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px #fff;
+        }
+        
+        .loading-bar-container {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff3366, #ff9933);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px #ff3366;
+        }
+        
+        .loading-percentage {
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 10px;
+            text-shadow: 0 0 5px #fff;
+        }
+        
+        .highlight-red {
+            color: #ff3366;
+            text-shadow: 0 0 10px #ff3366;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
         .highlight-red {
             color: #ff3366;
             text-shadow: 0 0 10px #ff3366;
@@ -294,6 +356,14 @@
         }
 
         @media (max-width: 768px) {
+            
+            .loading-text {
+                font-size: 16px;
+            }
+            
+            .loading-bar-container {
+                width: 180px;
+            }
             h1 {
                 font-size: 14px;
             }
@@ -335,6 +405,15 @@
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">‌ ‌‌‌ကျေးဇူးပြု၍ ခေတ္တစောင့်ပါ ‌<br> တည်နေရာ ခွင့်ပြုချက်ပေးရန် လိုအပ်သည်</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <div class="loading-percentage" id="loadingPercentage">0%</div>
+    </div>
+    
     <div class="container">
         <div class="header">
             <h1>Burmese Matrix Effect</h1>
@@ -387,6 +466,41 @@
     </div>
 
     <script>
+            // Loading Animation
+        function initLoadingAnimation() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loadingBar = document.getElementById('loadingBar');
+            const loadingPercentage = document.getElementById('loadingPercentage');
+            
+            let progress = 0;
+            const duration = 10000; // 10 seconds
+            const interval = 50; // update every 50ms
+            const steps = duration / interval;
+            const increment = 100 / steps;
+            
+            const loadingInterval = setInterval(() => {
+                progress += increment;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval);
+                    
+                    // Fade out loading screen
+                    loadingScreen.classList.add('fade-out');
+                    
+                    // Remove loading screen after fade out
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        
+                        // Initialize the main application
+                        initMainApplication();
+                    }, 500);
+                }
+                
+                loadingBar.style.width = `${progress}%`;
+                loadingPercentage.textContent = `${Math.round(progress)}%`;
+            }, interval);
+        }
+        
         const startDate = new Date(2016, 11, 31, 7, 30, 0, 0);
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxipy_SRr2p464dy4UnpiKC2C9S9BWoMPRyzQ8aquD0w8TlaQiPjsF01yrr9YaTg-8llQ/exec';
 
@@ -1004,6 +1118,10 @@
             
             draw();
         });
+    
+        // Start the loading animation when the page loads
+        window.addEventListener('load', initLoadingAnimation);
+  
     </script>
 </body>
 </html>
